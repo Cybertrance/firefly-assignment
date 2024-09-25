@@ -5,15 +5,25 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
+	"sync"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/valyala/fasthttp"
 )
 
 // Consts
 // TODO: Export these to a configuration file later.
 const (
-	maxRedirects = 10
-	filePath     = "static/endg-urls"
+	maxRedirects      = 10
+	filePath          = "static/endg-urls"
+	containerSelector = ".caas-body"
+)
+
+var (
+	wg       sync.WaitGroup
+	mutex    sync.Mutex
+	articles []string
 )
 
 func getURLsFromFile() ([]string, error) {
@@ -94,13 +104,40 @@ func fetchContent(url string) (string, error) {
 	}
 }
 
+// extractArticleContent parses the HTML document to extract the article content
+func extractArticleContent(body string) (string, error) {
+	// Create a goquery document from the HTML string
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
+	if err != nil {
+		return "", fmt.Errorf("error loading HTML: %v", err)
+	}
+
+	// Find the article content. For Engadget, the article content is inside <div> with class `caas-body`
+	articleContent := doc.Find(containerSelector)
+	if articleContent.Length() == 0 {
+		return "", fmt.Errorf("could not find article content")
+	}
+
+	// Extract and return the text content
+	return articleContent.Text(), nil
+}
+
 func processArticle(url string) {
+	defer wg.Done()
+
 	body, err := fetchContent(url)
 	if err != nil {
 		log.Fatalf("Failed to fetch URL: %v", err)
 	}
 
-	fmt.Println(body)
+	article, err := extractArticleContent(body)
+	if err != nil {
+		log.Fatalf("Failed to extract article content: %v", err)
+	}
+
+	mutex.Lock()
+	articles = append(articles, article)
+	mutex.Unlock()
 }
 
 func main() {
@@ -109,7 +146,14 @@ func main() {
 		fmt.Println(error)
 	}
 	for _, url := range urls {
-		processArticle(url)
-		fmt.Println(url)
+		wg.Add(1)
+
+		go processArticle(url)
+
+		if error != nil {
+			fmt.Printf("Could not process article: %v", url)
+		}
 	}
+	wg.Wait()
+	fmt.Println(len(articles))
 }
