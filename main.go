@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -20,10 +21,16 @@ import (
 // TODO: Export these to a configuration file later.
 const (
 	maxRedirects      = 10
+	nTop              = 10
 	filePath          = "static/endg-urls"
 	containerSelector = ".caas-body"
 	wordBankURL       = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
 )
+
+type WordFreq struct {
+	word      string
+	frequency int32
+}
 
 var (
 	wg               sync.WaitGroup
@@ -182,6 +189,30 @@ func initializeWordBank() {
 	fmt.Println(len(wordBankMap))
 }
 
+// getTopWords sorts and extracts the top 'n' words from the word frequency map
+func getTopWords(n int) []WordFreq {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	// Convert map to slice of pairs
+	var wordList []WordFreq
+	for word, count := range wordFrequencyMap {
+		wordList = append(wordList, WordFreq{word, count})
+	}
+
+	// Sort by frequency
+	sort.Slice(wordList, func(i, j int) bool {
+		return wordList[i].frequency > wordList[j].frequency
+	})
+
+	// Get top N words
+	var topWords []WordFreq
+	for i := 0; i < n && i < len(wordList); i++ {
+		topWords = append(topWords, WordFreq{wordList[i].word, wordList[i].frequency})
+	}
+	return topWords
+}
+
 func main() {
 	initializeWordBank()
 
@@ -201,5 +232,11 @@ func main() {
 	wg.Wait()
 	for k, wordFreq := range wordFrequencyMap {
 		fmt.Println(k, wordFreq)
+	}
+
+	topNWords := getTopWords(10)
+
+	for word, freq := range topNWords {
+		fmt.Println(word, freq)
 	}
 }
