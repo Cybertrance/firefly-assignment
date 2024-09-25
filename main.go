@@ -2,11 +2,15 @@ package main
 
 import (
 	"bufio"
+	"firefly-assignment/utils"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/valyala/fasthttp"
@@ -18,12 +22,14 @@ const (
 	maxRedirects      = 10
 	filePath          = "static/endg-urls"
 	containerSelector = ".caas-body"
+	wordBankURL       = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
 )
 
 var (
-	wg       sync.WaitGroup
-	mutex    sync.Mutex
-	articles []string
+	wg               sync.WaitGroup
+	mutex            sync.Mutex
+	wordFrequencyMap map[string]int32    = make(map[string]int32)
+	wordBankMap      map[string]struct{} = make(map[string]struct{})
 )
 
 func getURLsFromFile() ([]string, error) {
@@ -122,6 +128,19 @@ func extractArticleContent(body string) (string, error) {
 	return articleContent.Text(), nil
 }
 
+// countWords processes an article by splitting the article into its constituent words and updating the wordFrequencyMap if it exists in the wordBankMap.
+func countWords(article string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	for _, word := range strings.Fields(article) {
+		normalizedWord := strings.ToLower(word)
+		if _, exists := wordBankMap[normalizedWord]; exists {
+			wordFrequencyMap[normalizedWord]++
+		}
+	}
+}
+
 func processArticle(url string) {
 	defer wg.Done()
 
@@ -135,12 +154,37 @@ func processArticle(url string) {
 		log.Fatalf("Failed to extract article content: %v", err)
 	}
 
-	mutex.Lock()
-	articles = append(articles, article)
-	mutex.Unlock()
+	countWords(article)
+}
+
+// initializeWordBank initializes the internal word bank by fetching it from the source URL and validating based on some rules.
+func initializeWordBank() {
+	resp, err := http.Get(wordBankURL)
+	if err != nil {
+		fmt.Println("Error fetching wordbank source:")
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+	words := strings.Fields(string(body))
+
+	for _, word := range words {
+		if utf8.RuneCountInString(word) > 3 && utils.IsLetter(word) {
+			wordBankMap[strings.ToLower(word)] = struct{}{}
+		}
+	}
+
+	fmt.Println(len(wordBankMap))
 }
 
 func main() {
+	initializeWordBank()
+
 	urls, error := getURLsFromFile()
 	if error != nil {
 		fmt.Println(error)
@@ -155,5 +199,7 @@ func main() {
 		}
 	}
 	wg.Wait()
-	fmt.Println(len(articles))
+	for k, wordFreq := range wordFrequencyMap {
+		fmt.Println(k, wordFreq)
+	}
 }
