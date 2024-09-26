@@ -9,9 +9,9 @@ on:
     branches:
       - main
 
-# Define jobs that will run on a Linux environment
 jobs:
-  build:
+  # Job 1: Run tests on the Go application
+  Test:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,9 +23,9 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.23.1"
+          go-version: "1.23.1" # Specify the Go version you're using
 
-      # Step 3: Cache Go modules to speed up subsequent builds
+      # Step 3: Cache Go modules to speed up subsequent runs
       - name: Cache Go modules
         uses: actions/cache@v3
         with:
@@ -40,21 +40,55 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      # Step 5: Run tests (ensure tests pass before building)
+      # Step 5: Run tests (run all unit tests in the project)
       - name: Run tests
-        run: go test ./... -v # Runs all tests in the project
+        run: go test ./... -v # This will run all tests in the project
 
-      # Step 6: Build the Go application
+  # Job 2: Build the Go application (Only runs if tests pass)
+  Build:
+    runs-on: ubuntu-latest
+
+    # Build depends on the test job
+    needs: test
+
+    steps:
+      # Step 1: Check out the repository again for the build
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Go
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.1" # Use the same version of Go as in the test step
+
+      # Step 3: Cache Go modules to speed up subsequent runs
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            /go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: go mod download
+
+      # Step 5: Build the Go application
       - name: Build application
         run: go build -o build/my-go-app . # Customize the output binary location as needed
 
-      # Step 7: Copy static files (url file)
+      # Step 6: Copy static files (if any)
       - name: Copy static files
-        run: cp -R static/* build/static/ # Copy static files to the build directory
+        run: |
+          mkdir -p build/static
+          cp -R static/* build/static/
 
-      # Step 8: Upload build artifacts
-      # Uploads the built binary and static files as artifacts in GitHub Actions
-      - name: Upload artifacts
+      # Step 7: Upload build artifacts (Optional)
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
