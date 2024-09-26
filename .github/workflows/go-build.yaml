@@ -99,6 +99,7 @@ jobs:
         run: |
           mkdir -p build/static  # Create the build directory if it doesn't exist
           cp -R static/* build/static/  # Copy static files to the build directory
+          cp config.yaml build/config.yaml
 
       # Step 7: Upload build artifacts (Optional)
       - name: Upload build artifacts
