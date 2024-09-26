@@ -24,7 +24,7 @@ var (
 	sourceUrlFileName     string
 	requestsPerSecond     rate.Limit
 	burstSize             int
-	maxConcurrentRequests int8
+	maxConcurrentRequests int
 )
 
 var (

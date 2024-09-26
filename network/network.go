@@ -33,8 +33,8 @@ func FetchContent(url string) (string, error) {
 	maxRetries := config.AppConfig.MaxRetries
 	maxRedirects := config.AppConfig.MaxRedirects
 
-	var redirectCount int8 = 0
-	var retryCount int8 = 0
+	var redirectCount int = 0
+	var retryCount int = 0
 
 	// Handle the edge-case where the URL could be a redirect.
 	// Attempt to discover the redirected URL and fetch the content from there.

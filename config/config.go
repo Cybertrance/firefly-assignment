@@ -16,9 +16,9 @@ type Config struct {
 	ContainerSelector     string     `mapstructure:"container_selector"`
 	RequestsPerSecond     rate.Limit `mapstructure:"requests_per_second"`
 	BurstSize             int        `mapstructure:"burst_size"`
-	MaxConcurrentRequests int8       `mapstructure:"max_concurrent_requests"`
-	MaxRetries            int8       `mapstructure:"max_retries"`
-	MaxRedirects          int8       `mapstructure:"max_redirects"`
+	MaxConcurrentRequests int        `mapstructure:"max_concurrent_requests"`
+	MaxRetries            int        `mapstructure:"max_retries"`
+	MaxRedirects          int        `mapstructure:"max_redirects"`
 }
 
 var AppConfig Config
