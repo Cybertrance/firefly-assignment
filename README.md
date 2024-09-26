@@ -48,7 +48,7 @@ Ensure you have the following installed:
    ./firefly.exe
    ```
 
-Alternatively, you can also download Linux or Windows binaries from [the latest CI pipeline.](https://github.com/Cybertrance/firefly-assignment/actions/runs/11054683629)
+Alternatively, you can also download Linux or Windows binaries from [the latest CI pipeline.](https://github.com/Cybertrance/firefly-assignment/actions)
 
 ## 🧪 **Running Tests**
 
