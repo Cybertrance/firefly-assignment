@@ -18,7 +18,6 @@ import (
 // Consts
 // TODO: Export these to a configuration file later.
 const (
-	// maxRedirects = 10
 	topResults = 10
 	filePath   = "static/endg-urls"
 )
@@ -31,7 +30,8 @@ var (
 	wordFrequencyMap map[string]int32 = make(map[string]int32)
 )
 
-func processArticle(url string) {
+// processURL processes a URL by first fetching the raw content, scraping the article text and finally updating the word frequency map.
+func processURL(url string) {
 	defer wg.Done()
 
 	body, err := network.FetchContent(url)
@@ -124,7 +124,7 @@ func getPrettyJSON(words []utils.WordFreq) (string, error) {
 }
 
 func main() {
-	wordBank.Initialize(wordBankChannel)
+	go wordBank.Initialize(wordBankChannel)
 
 	urls, error := getURLsFromFile()
 
@@ -134,7 +134,7 @@ func main() {
 
 	for _, url := range urls {
 		wg.Add(1)
-		go processArticle(url)
+		go processURL(url)
 
 		if error != nil {
 			fmt.Printf("Could not process article: %v", url)
