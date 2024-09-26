@@ -58,7 +58,7 @@ func TestGetTopWords(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := GetTopWords(tt.n, tt.wordFrequency)
+			result := GetTopNWords(tt.n, tt.wordFrequency)
 			if len(result) != len(tt.expected) {
 				t.Fatalf("expected %d words, got %d", len(tt.expected), len(result))
 			}

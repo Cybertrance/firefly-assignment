@@ -1,0 +1,14 @@
+# Configuration values for the application
+
+# General
+top_results: 10 # Number of top results to display
+source_url_filename: "endg-urls" # Filename that contains the list of URLs
+word_bank_url: "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt" # URL to fetch a word bank
+container_selector: ".caas-body" # CSS selector used to scrape content
+
+# Network
+requests_per_second: 20 # Maximum number of requests per second
+burst_size: 20 # Maximum burst size for rate limiting
+max_concurrent_requests: 20 # Maximum number of concurrent requests
+max_retries: 3 # Maximum number of retries for failed requests
+max_redirects: 5 # Maximum number of redirects to follow

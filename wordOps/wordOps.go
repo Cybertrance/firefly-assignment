@@ -9,8 +9,8 @@ import (
 
 var mutex sync.Mutex
 
-// GetTopWords sorts and extracts the top 'n' words from the word frequency map
-func GetTopWords(n int, wordFrequencyMap utils.WordFrequencyMap) []utils.WordFreq {
+// GetTopNWords sorts and extracts the top 'n' words from the word frequency map
+func GetTopNWords(n int, wordFrequencyMap utils.WordFrequencyMap) []utils.WordFreq {
 	mutex.Lock()
 	defer mutex.Unlock()
 

@@ -1,14 +1,10 @@
 package network
 
 import (
+	"firefly-assignment/config"
 	"fmt"
 
 	"github.com/valyala/fasthttp"
-)
-
-const (
-	maxRetries   int8 = 10
-	maxRedirects int8 = 10
 )
 
 // Creating an abstraction over fasthttp.Client to allow for mocking in test.
@@ -34,6 +30,8 @@ var httpClient HTTPClient = &DefaultHTTPClient{
 
 // fetchContent makes a GET request to the given URL and returns the body content as a string
 func FetchContent(url string) (string, error) {
+	maxRetries := config.AppConfig.MaxRetries
+	maxRedirects := config.AppConfig.MaxRedirects
 
 	var redirectCount int8 = 0
 	var retryCount int8 = 0

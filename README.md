@@ -93,14 +93,21 @@ The CI/CD pipeline is defined in the `.github/workflows` directory and includes 
 
 ## 🔧 **Configuration**
 
-You can configure the application by providing environment variables or using a configuration file. Typically, environment variables are used to control settings such as the number of concurrent requests, rate limiting, and other runtime options.
+You can configure the application through the `config.yaml` file.
 
-### Example `.env` file:
+### Example `config.yaml` file:
 
-```
-MAX_CONCURRENT_REQUESTS=5
-RATE_LIMIT=2
-```
+| **Configuration**         | **Default Value**                                                         | **Description**                                            |
+| ------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `top_results`             | `10`                                                                      | Number of top results to display after processing content. |
+| `source_url_filename`     | `"endg-urls"`                                                             | Filename that contains the list of URLs for scraping.      |
+| `word_bank_url`           | `"https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"` | # URL to fetch a word bank.                                |
+| `container_selector`      | `".caas-body"`                                                            | CSS selector used to target the content in HTML scraping.  |
+| `requests_per_second`     | `20`                                                                      | Maximum number of requests allowed per second.             |
+| `burst_size`              | `20`                                                                      | Maximum burst size allowed when rate limiting requests.    |
+| `max_concurrent_requests` | `20`                                                                      | Maximum number of requests that can be made concurrently.  |
+| `max_retries`             | `3`                                                                       | Number of retries allowed when requests fail.              |
+| `maxRedirects`            | `5`                                                                       | Maximum number of redirects that are followed per request. |
 
 ## 📜 **License**
 

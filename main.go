@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"firefly-assignment/article"
+	"firefly-assignment/config"
 	"firefly-assignment/display"
 	"firefly-assignment/network"
 	"firefly-assignment/utils"
@@ -17,14 +18,13 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Consts
-// TODO: Export these to a configuration file later.
-const (
-	topResults            = 10
-	filePath              = "static/endg-urls"
-	requestsPerSecond     = 20
-	burstSize             = 20
-	maxConcurrentRequests = 20
+// Configuration settings
+var (
+	nResults              int
+	sourceUrlFileName     string
+	requestsPerSecond     rate.Limit
+	burstSize             int
+	maxConcurrentRequests int8
 )
 
 var (
@@ -35,7 +35,7 @@ var (
 	processedURLs    int32                  = 0
 	erroredURLs      int32                  = 0
 
-	semaphoreMaxConcRequests = make(chan struct{}, maxConcurrentRequests)
+	semaphoreMaxConcRequests chan struct{}
 )
 
 // processURL processes a URL by first fetching the raw content, scraping the article text and finally updating the word frequency map.
@@ -73,7 +73,7 @@ func processURL(url string) {
 // getURLsFromFile gets the URLs for the articles to be scraped from the 'endg-urls' file
 func getURLsFromFile() ([]string, error) {
 	// Open the file
-	file, err := os.Open(filePath)
+	file, err := os.Open("static/" + sourceUrlFileName)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +95,17 @@ func getURLsFromFile() ([]string, error) {
 }
 
 func main() {
+	// Load config from 'config.yaml' if available.
+	config.LoadConfig()
+
+	// Set Configuration settings
+	nResults = config.AppConfig.TopResults
+	sourceUrlFileName = config.AppConfig.SourceURLFileName
+	requestsPerSecond = config.AppConfig.RequestsPerSecond
+	burstSize = config.AppConfig.BurstSize
+	maxConcurrentRequests = config.AppConfig.MaxConcurrentRequests
+	semaphoreMaxConcRequests = make(chan struct{}, maxConcurrentRequests)
+
 	go wordBank.Initialize(wordBankChannel)
 
 	urls, error := getURLsFromFile()
@@ -112,7 +123,7 @@ func main() {
 	}
 	wg.Wait()
 
-	var topNWords = wordOps.GetTopWords(topResults, wordFrequencyMap)
+	var topNWords = wordOps.GetTopNWords(nResults, wordFrequencyMap)
 
 	fmt.Printf("\n\n========")
 	fmt.Printf("\nTotal entries: %v", len(urls))

@@ -1,6 +1,7 @@
 package wordBank
 
 import (
+	"firefly-assignment/config"
 	"firefly-assignment/utils"
 	"fmt"
 	"io"
@@ -9,12 +10,10 @@ import (
 	"unicode/utf8"
 )
 
-const wordBankURL = "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
-
 // Initialize initializes the internal word bank by fetching it from the source URL and validating based on some rules.
 func Initialize(wordBankChannel chan utils.WordBank) {
 	wordBankMap := make(utils.WordBank)
-
+	var wordBankURL = config.AppConfig.WordBankURL
 	resp, err := http.Get(wordBankURL)
 	if err != nil {
 		fmt.Println("Error fetching wordbank source:")
