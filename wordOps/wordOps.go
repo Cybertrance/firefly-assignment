@@ -1,8 +1,9 @@
 package wordOps
 
 import (
+	"container/heap"
+	"firefly-assignment/minheap"
 	"firefly-assignment/utils"
-	"sort"
 	"strings"
 	"sync"
 )
@@ -14,23 +15,38 @@ func GetTopNWords(n int, wordFrequencyMap utils.WordFrequencyMap) []utils.WordFr
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	// Convert map to slice of pairs
-	var wordList []utils.WordFreq
+	// Initialize heatmap
+	h := &minheap.MinHeap{}
+	heap.Init(h)
+
 	for word, count := range wordFrequencyMap {
-		wordList = append(wordList, utils.WordFreq{Word: word, Frequency: count})
+		if h.Len() < n {
+			heap.Push(h, utils.WordFreq{Word: word, Frequency: count})
+		} else if count > (*h)[0].Frequency {
+			heap.Pop(h)
+			heap.Push(h, utils.WordFreq{Word: word, Frequency: count})
+		}
 	}
 
-	// Sort by frequency
-	sort.Slice(wordList, func(i, j int) bool {
-		return wordList[i].Frequency > wordList[j].Frequency
-	})
+	// Get the items from the heap.
+	result := make([]utils.WordFreq, 0, n)
+	for h.Len() > 0 {
+		result = append(result, heap.Pop(h).(utils.WordFreq))
+	}
+
+	// Reverse result to show highest frequency first
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
+	return result
 
 	// Get top N words
-	var topWords []utils.WordFreq
-	for i := 0; i < n && i < len(wordList); i++ {
-		topWords = append(topWords, utils.WordFreq{Word: wordList[i].Word, Frequency: wordList[i].Frequency})
-	}
-	return topWords
+	// var topWords []utils.WordFreq
+	// for i := 0; i < n && i < len(wordList); i++ {
+	// 	topWords = append(topWords, utils.WordFreq{Word: wordList[i].Word, Frequency: wordList[i].Frequency})
+	// }
+	// return topWords
 }
 
 // CountWords processes an article by splitting the article into its constituent words and updating the wordFrequencyMap if it exists in the wordBankMap.
