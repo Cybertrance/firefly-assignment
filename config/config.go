@@ -24,7 +24,7 @@ type Config struct {
 var AppConfig Config
 
 // LoadConfig loads the configuration from a file or uses default values if the file is missing
-func LoadConfig() error {
+func LoadConfig() {
 	// Set default values
 	viper.SetDefault("top_results", 10)
 	viper.SetDefault("source_url_filename", "endg-urls")
@@ -43,12 +43,11 @@ func LoadConfig() error {
 
 	// Read the config file if available; otherwise, continue with defaults
 	if err := viper.ReadInConfig(); err != nil {
-		return fmt.Errorf("[ERROR] - no configuration file found, using default values: %w", err)
+		fmt.Println("[INFO] - no configuration file found, using default values)")
 	}
 
 	// Unmarshal the config into AppConfig struct
 	if err := viper.Unmarshal(&AppConfig); err != nil {
 		log.Fatalf("Unable to decode into struct: %v", err)
 	}
-	return nil
 }
