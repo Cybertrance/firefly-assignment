@@ -29,7 +29,7 @@ var (
 
 var (
 	wg               sync.WaitGroup
-	wordBankChannel                         = make(chan utils.WordBank, 1)
+	wordBankChannel  chan utils.WordBank    = make(chan utils.WordBank, 1)
 	validWords       utils.WordBank         = make(utils.WordBank)
 	wordFrequencyMap utils.WordFrequencyMap = make(utils.WordFrequencyMap)
 	processedURLs    int32                  = 0
@@ -38,30 +38,31 @@ var (
 	semaphoreMaxConcRequests chan struct{}
 )
 
-// processURL processes a URL by first fetching the raw content, scraping the article text and finally updating the word frequency map.
-// Use a semaphore (with size `maxConcRequests`) to limit the number of concurrent URLs processed.
+// processURL processes a URL by first fetching the raw content from the URL, scraping an article and finally updating the word frequency map.
 func processURL(url string) {
+	// Use a semaphore (with size `maxConcRequests`) to limit the number of concurrent URLs processed.
 	semaphoreMaxConcRequests <- struct{}{}
 	defer func() { <-semaphoreMaxConcRequests }()
 
 	defer wg.Done()
 
-	fmt.Printf("\nProcessing URL: %v", url)
+	fmt.Printf("\n[INFO] - Processing URL: %v", url)
 
 	body, err := network.FetchContent(url)
 	if err != nil {
-		fmt.Printf("\nFailed to fetch URL: %v with Error: %v", url, err)
+		fmt.Printf("\n[ERROR] - Failed to fetch URL: %v with Error: %v", url, err)
 		erroredURLs++
 		return
 	}
 
 	articleWords, err := article.GetArticleWords(body)
 	if err != nil {
-		fmt.Printf("\nFailed to extract article content for URL: %v with Error: %v", url, err)
+		fmt.Printf("\n[ERROR] - Failed to extract article content for URL: %v with Error: %v", url, err)
 		erroredURLs++
 		return
 	}
 
+	// Initialize the word bank of valid words.
 	if len(validWords) == 0 {
 		validWords = <-wordBankChannel
 	}
@@ -70,23 +71,21 @@ func processURL(url string) {
 	processedURLs++
 }
 
-// getURLsFromFile gets the URLs for the articles to be scraped from the 'endg-urls' file
+// getURLsFromFile gets the URLs for the articles to be scraped from the configured file
 func getURLsFromFile() ([]string, error) {
-	// Open the file
 	file, err := os.Open("static/" + sourceUrlFileName)
+	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
 	// Create a scanner to read the file line by line
 	var lines []string
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		lines = append(lines, scanner.Text()) // Append each line to the slice
+		lines = append(lines, scanner.Text())
 	}
 
-	// Check for any errors encountered while reading the file
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
@@ -106,16 +105,19 @@ func main() {
 	maxConcurrentRequests = config.AppConfig.MaxConcurrentRequests
 	semaphoreMaxConcRequests = make(chan struct{}, maxConcurrentRequests)
 
+	// 1. Initialize the word bank of valid words
 	go wordBank.Initialize(wordBankChannel)
 
-	urls, error := getURLsFromFile()
+	// 2. Get the URLs from file
+	urls, err := getURLsFromFile()
 
-	if error != nil {
-		log.Fatalln("No URLs to fetch content from. ERROR: ", error)
+	if err != nil {
+		log.Fatalln("[ERROR] - No URLs to fetch content from")
 	}
 
 	limiter := rate.NewLimiter(requestsPerSecond, burstSize)
 
+	// 3. For each URL, scrape and process the data.
 	for _, url := range urls {
 		limiter.Wait(context.Background())
 		wg.Add(1)
@@ -123,6 +125,7 @@ func main() {
 	}
 	wg.Wait()
 
+	// 4. Get Top N words
 	var topNWords = wordOps.GetTopNWords(nResults, wordFrequencyMap)
 
 	fmt.Printf("\n\n========")

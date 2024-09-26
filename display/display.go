@@ -6,6 +6,7 @@ import (
 	"fmt"
 )
 
+// GetPrettyJSON gets a pretty-json from the words struct
 func GetPrettyJSON(words []utils.WordFreq) (string, error) {
 	prettyJSON, err := json.MarshalIndent(words, "", "    ")
 
