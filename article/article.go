@@ -13,7 +13,7 @@ func extractArticleContent(body string) (string, error) {
 	// Create a goquery document from the HTML string
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
 	if err != nil {
-		return "", fmt.Errorf("error loading HTML: %v", err)
+		return "", fmt.Errorf("[ERROR] - error loading HTML: %v", err)
 	}
 
 	// Find the article content. For Engadget, the article content is inside <div> with class `caas-body`
@@ -21,7 +21,7 @@ func extractArticleContent(body string) (string, error) {
 	containerSelector := config.AppConfig.ContainerSelector
 	articleContent := doc.Find(containerSelector)
 	if articleContent.Length() == 0 {
-		return "", fmt.Errorf("could not find article content")
+		return "", fmt.Errorf("[ERROR] - could not find article content")
 	}
 
 	// Extract and return the text content

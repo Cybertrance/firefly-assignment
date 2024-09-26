@@ -17,10 +17,6 @@ var httpGetFunc = func(url string) (*http.Response, error) {
 	}, nil
 }
 
-func mockHTTPGet(url string) (*http.Response, error) {
-	return httpGetFunc(url)
-}
-
 func TestInitialize(t *testing.T) {
 	config.LoadConfig()
 
@@ -53,7 +49,7 @@ func TestInitialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Mock the http.Get call
-			httpGetFunc = func(url string) (*http.Response, error) {
+			httpGetFunc = func(_ string) (*http.Response, error) {
 				return &http.Response{
 					StatusCode: 200,
 					Body:       io.NopCloser(strings.NewReader(tt.mockResponse)),

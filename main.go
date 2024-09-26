@@ -74,10 +74,10 @@ func processURL(url string) {
 // getURLsFromFile gets the URLs for the articles to be scraped from the configured file
 func getURLsFromFile() ([]string, error) {
 	file, err := os.Open("static/" + sourceUrlFileName)
-	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	// Create a scanner to read the file line by line
 	var lines []string

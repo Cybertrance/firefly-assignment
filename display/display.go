@@ -11,7 +11,7 @@ func GetPrettyJSON(words []utils.WordFreq) (string, error) {
 	prettyJSON, err := json.MarshalIndent(words, "", "    ")
 
 	if err != nil {
-		fmt.Println("Could not convert to JSON")
+		return "", fmt.Errorf("[ERROR] - Could not convert struct to JSON - %w", err)
 	}
 
 	return string(prettyJSON), nil

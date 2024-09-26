@@ -19,10 +19,10 @@ func Initialize(wordBankChannel chan utils.WordBank) error {
 	wordBankMap := make(utils.WordBank)
 	wordBankURL = config.AppConfig.WordBankURL
 	resp, err := http.Get(wordBankURL)
-	defer resp.Body.Close()
 	if err != nil {
-		log.Fatalf("[ERROR] - Error fetching wordbank source %v - %v", word_bank_url, err)
+		log.Fatalf("[ERROR] - Error fetching wordbank source %v - %v", wordBankURL, err)
 	}
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -37,4 +37,5 @@ func Initialize(wordBankChannel chan utils.WordBank) error {
 	}
 
 	wordBankChannel <- wordBankMap
+	return nil
 }
