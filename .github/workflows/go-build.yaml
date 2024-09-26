@@ -80,12 +80,19 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      # Step 5: Build application for specified platform (Linux or Windows)
+      # Step 5: Build application for specified platform (Linux or Windows) with the repo name as the binary name
       - name: Build application
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
-        run: go build -o build/my-go-app-${{ matrix.goos }}-${{ matrix.goarch }} . # Output different binaries for each OS
+          REPO_NAME: ${{ github.event.repository.name }} # Extract the repository name
+        run: |
+          # Set binary extension based on OS
+          BINARY_NAME="${REPO_NAME}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            BINARY_NAME="${BINARY_NAME}.exe"
+          fi
+          go build -o build/$BINARY_NAME .
 
       # Step 6: Copy static files (if any)
       - name: Copy static files
