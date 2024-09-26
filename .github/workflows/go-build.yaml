@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Build depends on the test job
-    needs: test
+    needs: Test
 
     steps:
       # Step 1: Check out the repository again for the build
