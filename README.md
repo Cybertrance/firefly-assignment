@@ -28,8 +28,7 @@ Ensure you have the following installed:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/[your-username]/[your-repo-name].git
-   cd [your-repo-name]
+   git clone https://github.com/Cybertrance/firefly-assignment.git
    ```
 
 2. Install dependencies:
@@ -38,16 +37,18 @@ Ensure you have the following installed:
    go mod download
    ```
 
-3. Build the application:
+3. Build the application (On windows):
 
    ```bash
-   go build -o [your-repo-name] .
+   go build -o firefly.exe
    ```
 
-4. Run the application:
+4. Run the application (On windows):
    ```bash
-   ./[your-repo-name]
+   ./firefly.exe
    ```
+
+Alternatively, you can also download Linux or Windows binaries from [the latest CI pipeline.](https://github.com/Cybertrance/firefly-assignment/actions/runs/11054683629)
 
 ## 🧪 **Running Tests**
 
