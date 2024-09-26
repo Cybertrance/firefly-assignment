@@ -2,90 +2,72 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
+	"context"
 	"firefly-assignment/article"
+	"firefly-assignment/display"
 	"firefly-assignment/network"
 	"firefly-assignment/utils"
 	"firefly-assignment/wordBank"
+	"firefly-assignment/wordOps"
 	"fmt"
 	"log"
 	"os"
-	"sort"
-	"strings"
 	"sync"
+
+	"golang.org/x/time/rate"
 )
 
 // Consts
 // TODO: Export these to a configuration file later.
 const (
-	topResults = 10
-	filePath   = "static/endg-urls"
+	topResults            = 10
+	filePath              = "static/endg-urls"
+	requestsPerSecond     = 20
+	burstSize             = 20
+	maxConcurrentRequests = 20
 )
 
 var (
 	wg               sync.WaitGroup
-	mutex            sync.Mutex
-	wordBankChannel                   = make(chan utils.WordBank, 1)
-	validWords       utils.WordBank   = make(utils.WordBank)
-	wordFrequencyMap map[string]int32 = make(map[string]int32)
+	wordBankChannel                         = make(chan utils.WordBank, 1)
+	validWords       utils.WordBank         = make(utils.WordBank)
+	wordFrequencyMap utils.WordFrequencyMap = make(utils.WordFrequencyMap)
+	processedURLs    int32                  = 0
+	erroredURLs      int32                  = 0
+
+	semaphoreMaxConcRequests = make(chan struct{}, maxConcurrentRequests)
 )
 
 // processURL processes a URL by first fetching the raw content, scraping the article text and finally updating the word frequency map.
+// Use a semaphore (with size `maxConcRequests`) to limit the number of concurrent URLs processed.
 func processURL(url string) {
+	semaphoreMaxConcRequests <- struct{}{}
+	defer func() { <-semaphoreMaxConcRequests }()
+
 	defer wg.Done()
+
+	fmt.Printf("\nProcessing URL: %v", url)
 
 	body, err := network.FetchContent(url)
 	if err != nil {
-		log.Fatalf("Failed to fetch URL: %v", err)
+		fmt.Printf("\nFailed to fetch URL: %v with Error: %v", url, err)
+		erroredURLs++
+		return
 	}
 
 	articleWords, err := article.GetArticleWords(body)
 	if err != nil {
-		log.Fatalf("Failed to extract article content: %v", err)
+		fmt.Printf("\nFailed to extract article content for URL: %v with Error: %v", url, err)
+		erroredURLs++
+		return
 	}
 
 	if len(validWords) == 0 {
 		validWords = <-wordBankChannel
 	}
 
-	countWords(articleWords, validWords)
-}
-
-// CountWords processes an article by splitting the article into its constituent words and updating the wordFrequencyMap if it exists in the wordBankMap.
-func countWords(articleWords []string, wordBank utils.WordBank) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	for _, word := range articleWords {
-		normalizedWord := strings.ToLower(word)
-		if _, exists := wordBank[normalizedWord]; exists {
-			wordFrequencyMap[normalizedWord]++
-		}
-	}
-}
-
-// getTopWords sorts and extracts the top 'n' words from the word frequency map
-func getTopWords(n int) []utils.WordFreq {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	// Convert map to slice of pairs
-	var wordList []utils.WordFreq
-	for word, count := range wordFrequencyMap {
-		wordList = append(wordList, utils.WordFreq{Word: word, Frequency: count})
-	}
-
-	// Sort by frequency
-	sort.Slice(wordList, func(i, j int) bool {
-		return wordList[i].Frequency > wordList[j].Frequency
-	})
-
-	// Get top N words
-	var topWords []utils.WordFreq
-	for i := 0; i < n && i < len(wordList); i++ {
-		topWords = append(topWords, utils.WordFreq{Word: wordList[i].Word, Frequency: wordList[i].Frequency})
-	}
-	return topWords
+	wordOps.CountWords(articleWords, validWords, wordFrequencyMap)
+	processedURLs++
 }
 
 // getURLsFromFile gets the URLs for the articles to be scraped from the 'endg-urls' file
@@ -112,17 +94,6 @@ func getURLsFromFile() ([]string, error) {
 	return lines, nil
 }
 
-func getPrettyJSON(words []utils.WordFreq) (string, error) {
-	prettyJSON, err := json.MarshalIndent(words, "", "    ")
-
-	if err != nil {
-		fmt.Println("Could not convert to JSON")
-	}
-
-	return string(prettyJSON), nil
-
-}
-
 func main() {
 	go wordBank.Initialize(wordBankChannel)
 
@@ -132,21 +103,21 @@ func main() {
 		log.Fatalln("No URLs to fetch content from. ERROR: ", error)
 	}
 
+	limiter := rate.NewLimiter(requestsPerSecond, burstSize)
+
 	for _, url := range urls {
+		limiter.Wait(context.Background())
 		wg.Add(1)
 		go processURL(url)
-
-		if error != nil {
-			fmt.Printf("Could not process article: %v", url)
-		}
 	}
 	wg.Wait()
 
-	// for k, wordFreq := range wordFrequencyMap {
-	// 	fmt.Println(k, wordFreq)
-	// }
+	var topNWords = wordOps.GetTopWords(topResults, wordFrequencyMap)
 
-	var topNWords = getTopWords(topResults)
-
-	fmt.Println(getPrettyJSON(topNWords))
+	fmt.Printf("\n\n========")
+	fmt.Printf("\nTotal entries: %v", len(urls))
+	fmt.Printf("\nProcessed entries: %v", processedURLs)
+	fmt.Printf("\nErrored entries: %v", erroredURLs)
+	fmt.Println("\nTop 10 words:")
+	fmt.Println(display.GetPrettyJSON(topNWords))
 }

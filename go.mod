@@ -13,4 +13,5 @@ require (
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 )
