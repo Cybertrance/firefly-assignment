@@ -11,11 +11,29 @@ const (
 	maxRedirects int8 = 10
 )
 
+// Creating an abstraction over fasthttp.Client to allow for mocking in test.
+// HTTPClient defines the interface for an HTTP client
+type HTTPClient interface {
+	Do(req *fasthttp.Request, resp *fasthttp.Response) error
+}
+
+// DefaultHTTPClient wraps the default fasthttp.Client
+type DefaultHTTPClient struct {
+	Client *fasthttp.Client
+}
+
+func (c *DefaultHTTPClient) Do(req *fasthttp.Request, resp *fasthttp.Response) error {
+	return c.Client.Do(req, resp)
+}
+
+var httpClient HTTPClient = &DefaultHTTPClient{
+	Client: &fasthttp.Client{
+		ReadBufferSize: 8192, // Increase buffer size to handle larger request header sizes.
+	},
+}
+
 // fetchContent makes a GET request to the given URL and returns the body content as a string
 func FetchContent(url string) (string, error) {
-	client := &fasthttp.Client{
-		ReadBufferSize: 8192, // Increase buffer size to handle larger request header sizes.
-	}
 
 	var redirectCount int8 = 0
 	var retryCount int8 = 0
@@ -33,7 +51,7 @@ func FetchContent(url string) (string, error) {
 		req.SetRequestURI(url)
 
 		// Make the GET request
-		err := client.Do(req, resp)
+		err := httpClient.Do(req, resp)
 		// if err != nil {
 		// 	return "", fmt.Errorf("error fetching URL: %v", err)
 		// }
