@@ -1,6 +1,7 @@
 package network
 
 import (
+	"firefly-assignment/config"
 	"fmt"
 	"testing"
 
@@ -30,6 +31,8 @@ func (m *mockClient) Do(req *fasthttp.Request, resp *fasthttp.Response) error {
 }
 
 func TestFetchContent(t *testing.T) {
+	config.LoadConfig()
+
 	tests := []struct {
 		name          string
 		mockClient    *mockClient

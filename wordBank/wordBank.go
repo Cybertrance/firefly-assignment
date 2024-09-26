@@ -10,10 +10,14 @@ import (
 	"unicode/utf8"
 )
 
+var (
+	wordBankURL string
+)
+
 // Initialize initializes the internal word bank by fetching it from the source URL and validating based on some rules.
 func Initialize(wordBankChannel chan utils.WordBank) {
 	wordBankMap := make(utils.WordBank)
-	var wordBankURL = config.AppConfig.WordBankURL
+	wordBankURL = config.AppConfig.WordBankURL
 	resp, err := http.Get(wordBankURL)
 	if err != nil {
 		fmt.Println("Error fetching wordbank source:")

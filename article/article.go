@@ -8,6 +8,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+var (
+	containerSelector string
+)
+
 // extractArticleContent parses the HTML document to extract the article content
 func extractArticleContent(body string) (string, error) {
 	// Create a goquery document from the HTML string
@@ -17,7 +21,7 @@ func extractArticleContent(body string) (string, error) {
 	}
 
 	// Find the article content. For Engadget, the article content is inside <div> with class `caas-body`
-	var containerSelector = config.AppConfig.ContainerSelector
+	containerSelector = config.AppConfig.ContainerSelector
 	articleContent := doc.Find(containerSelector)
 	if articleContent.Length() == 0 {
 		return "", fmt.Errorf("could not find article content")

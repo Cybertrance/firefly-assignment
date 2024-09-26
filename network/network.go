@@ -28,10 +28,15 @@ var httpClient HTTPClient = &DefaultHTTPClient{
 	},
 }
 
+var (
+	maxRetries   int8
+	maxRedirects int8
+)
+
 // fetchContent makes a GET request to the given URL and returns the body content as a string
 func FetchContent(url string) (string, error) {
-	maxRetries := config.AppConfig.MaxRetries
-	maxRedirects := config.AppConfig.MaxRedirects
+	maxRetries = config.AppConfig.MaxRetries
+	maxRedirects = config.AppConfig.MaxRedirects
 
 	var redirectCount int8 = 0
 	var retryCount int8 = 0

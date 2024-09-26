@@ -1,6 +1,7 @@
 package wordBank
 
 import (
+	"firefly-assignment/config"
 	"firefly-assignment/utils"
 	"io"
 	"net/http"
@@ -21,6 +22,8 @@ func mockHTTPGet(url string) (*http.Response, error) {
 }
 
 func TestInitialize(t *testing.T) {
+	config.LoadConfig()
+
 	tests := []struct {
 		name          string
 		mockResponse  string

@@ -1,10 +1,13 @@
 package article
 
 import (
+	"firefly-assignment/config"
 	"testing"
 )
 
 func TestGetArticleWords(t *testing.T) {
+	config.LoadConfig()
+
 	tests := []struct {
 		name          string
 		inputHTML     string
