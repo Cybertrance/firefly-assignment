@@ -128,10 +128,16 @@ func main() {
 	// 4. Get Top N words
 	var topNWords = wordOps.GetTopNWords(nResults, wordFrequencyMap)
 
+	output, err := display.GetPrettyJSON(topNWords)
+	if err != nil {
+		fmt.Println("[ERROR] - Could not print output.")
+	}
+
+	// Print output
 	fmt.Printf("\n\n========")
 	fmt.Printf("\nTotal entries: %v", len(urls))
 	fmt.Printf("\nProcessed entries: %v", processedURLs)
 	fmt.Printf("\nErrored entries: %v", erroredURLs)
 	fmt.Println("\nTop 10 words:")
-	fmt.Println(display.GetPrettyJSON(topNWords))
+	fmt.Println(output)
 }
