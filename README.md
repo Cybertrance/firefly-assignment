@@ -43,12 +43,16 @@ Ensure you have the following installed:
    go build -o firefly.exe
    ```
 
-4. Run the application (On windows):
-   ```bash
-   ./firefly.exe
-   ```
-
 Alternatively, you can also download Linux or Windows binaries from [the latest CI pipeline.](https://github.com/Cybertrance/firefly-assignment/actions)
+
+## 🖥️ **Running the application**
+
+First, ensure that you have a file with the URLs to be scraped in the `\static\` folder and that the file name is configured in the `config.yaml`.
+Then, run the binary with:
+
+```bash
+./firefly.exe # On Windows
+```
 
 ## 🧪 **Running Tests**
 
@@ -98,17 +102,17 @@ You can configure the application through the `config.yaml` file.
 
 ### Example `config.yaml` file:
 
-| **Configuration**         | **Default Value**                                                         | **Description**                                            |
-| ------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `top_results`             | `10`                                                                      | Number of top results to display after processing content. |
-| `source_url_filename`     | `"endg-urls"`                                                             | Filename that contains the list of URLs for scraping.      |
-| `word_bank_url`           | `"https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"` | # URL to fetch a word bank.                                |
-| `container_selector`      | `".caas-body"`                                                            | CSS selector used to target the content in HTML scraping.  |
-| `requests_per_second`     | `20`                                                                      | Maximum number of requests allowed per second.             |
-| `burst_size`              | `20`                                                                      | Maximum burst size allowed when rate limiting requests.    |
-| `max_concurrent_requests` | `20`                                                                      | Maximum number of requests that can be made concurrently.  |
-| `max_retries`             | `3`                                                                       | Number of retries allowed when requests fail.              |
-| `maxRedirects`            | `5`                                                                       | Maximum number of redirects that are followed per request. |
+| **Configuration**         | **Default Value**                                                         | **Description**                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `top_results`             | `10`                                                                      | Number of top results to display after processing content.                                       |
+| `source_url_filename`     | `"endg-urls"`                                                             | Filename that contains the list of URLs for scraping. The file should be in the `static` folder. |
+| `word_bank_url`           | `"https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"` | # URL to fetch a word bank with valid words.                                                     |
+| `container_selector`      | `".caas-body"`                                                            | CSS selector used to target the content in HTML scraping.                                        |
+| `requests_per_second`     | `20`                                                                      | Maximum number of requests allowed per second.                                                   |
+| `burst_size`              | `20`                                                                      | Maximum burst size allowed when rate limiting requests.                                          |
+| `max_concurrent_requests` | `20`                                                                      | Maximum number of requests that can be made concurrently.                                        |
+| `max_retries`             | `3`                                                                       | Number of retries allowed when requests fail.                                                    |
+| `maxRedirects`            | `5`                                                                       | Maximum number of redirects that are followed per request.                                       |
 
 ## 📜 **License**
 
