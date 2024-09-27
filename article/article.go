@@ -1,3 +1,9 @@
+/*
+Package article provides utilities for extracting and processing article content
+from raw HTML. The package is designed to work with HTML bodies of web articles,
+extracting meaningful content, and further splitting that content into words for
+analysis or other purposes.
+*/
 package article
 
 import (
@@ -8,7 +14,16 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-// extractArticleContent parses the HTML document to extract the article content
+// extractArticleContent extracts and returns the textual content of an article
+// from the provided HTML string. It uses a CSS selector to identify the container
+// of the article's body, which is configurable via the application's configuration.
+//
+// Parameters:
+//   - body: A string containing the HTML content from which the article text will be extracted.
+//
+// Returns:
+//   - string: The extracted article text.
+//   - error: An error if the article content cannot be found or the HTML cannot be parsed.
 func extractArticleContent(body string) (string, error) {
 	// Create a goquery document from the HTML string
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(body))
@@ -28,12 +43,30 @@ func extractArticleContent(body string) (string, error) {
 	return articleContent.Text(), nil
 }
 
-// getWords splits the article into its constituent words as an array
+// getWords splits the provided article text into individual words.
+// It uses whitespace as the delimiter to separate the words.
+//
+// Parameters:
+//   - article: A string representing the article text to be split into words.
+//
+// Returns:
+//   - []string: A slice containing individual words from the article text.
 func getWords(article string) []string {
 	return strings.Fields(article)
 }
 
-// GetArticleWords takes in a raw HTML body, and scrapes the article content from it.
+// GetArticleWords extracts the text content of an article from the provided raw HTML body
+// and splits the article into individual words.
+//
+// This function first extracts the article content using extractArticleContent, and then
+// splits the content into words using getWords.
+//
+// Parameters:
+//   - rawBody: A string containing the raw HTML body of the article.
+//
+// Returns:
+//   - []string: A slice containing individual words from the extracted article content.
+//   - error: An error if the article content cannot be extracted.
 func GetArticleWords(rawBody string) ([]string, error) {
 	article, err := extractArticleContent(rawBody)
 

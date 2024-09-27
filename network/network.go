@@ -1,3 +1,5 @@
+// Package network provides functions for making HTTP requests and handling
+// network communication, including support for retries and redirects.
 package network
 
 import (
@@ -28,7 +30,14 @@ var httpClient HTTPClient = &DefaultHTTPClient{
 	},
 }
 
-// FetchContent makes a GET request to the given URL and returns the raw body content as a string
+// FetchContent retrieves the content from the given URL, handling retries and redirects.
+//
+// Parameters:
+//   - url: The URL to fetch content from.
+//
+// Returns:
+//   - string: The response body as a string if the request succeeds.
+//   - error: An error if the request fails, exceeds retries, or encounters too many redirects.
 func FetchContent(url string) (string, error) {
 	maxRetries := config.AppConfig.MaxRetries
 	maxRedirects := config.AppConfig.MaxRedirects

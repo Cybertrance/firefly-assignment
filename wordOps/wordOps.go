@@ -1,3 +1,5 @@
+// Package wordOps provides operations for processing word frequencies,
+// including counting word occurrences and extracting the top N frequent words.
 package wordOps
 
 import (
@@ -10,7 +12,15 @@ import (
 
 var mutex sync.Mutex
 
-// GetTopNWords sorts and extracts the top 'n' words from the word frequency map
+// GetTopNWords returns the top 'n' words with the highest frequencies from the given word frequency map.
+// It uses a min-heap to efficiently keep track of the top words.
+//
+// Parameters:
+//   - n: The number of top words to return.
+//   - wordFrequencyMap: A map where keys are words and values are their frequencies.
+//
+// Returns:
+//   - []utils.WordFreq: A slice containing the top 'n' words with their frequencies, sorted by frequency.
 func GetTopNWords(n int, wordFrequencyMap utils.WordFrequencyMap) []utils.WordFreq {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -40,16 +50,14 @@ func GetTopNWords(n int, wordFrequencyMap utils.WordFrequencyMap) []utils.WordFr
 	}
 
 	return result
-
-	// Get top N words
-	// var topWords []utils.WordFreq
-	// for i := 0; i < n && i < len(wordList); i++ {
-	// 	topWords = append(topWords, utils.WordFreq{Word: wordList[i].Word, Frequency: wordList[i].Frequency})
-	// }
-	// return topWords
 }
 
-// CountWords processes an article by splitting the article into its constituent words and updating the wordFrequencyMap if it exists in the wordBankMap.
+// CountWords updates the word frequency map by counting occurrences of words in the article that exist in the word bank.
+//
+// Parameters:
+//   - articleWords: A slice of words from the article to be processed.
+//   - wordBank: A set of valid words used for filtering the article words.
+//   - wordFrequencyMap: A map where word counts will be updated.
 func CountWords(articleWords []string, wordBank utils.WordBank, wordFrequencyMap utils.WordFrequencyMap) {
 	mutex.Lock()
 	defer mutex.Unlock()

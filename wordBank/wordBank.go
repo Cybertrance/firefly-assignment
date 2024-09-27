@@ -1,3 +1,5 @@
+// Package wordBank provides functionality for managing a word bank,
+// including fetching and validating words from an external source.
 package wordBank
 
 import (
@@ -14,7 +16,15 @@ var (
 	wordBankURL string
 )
 
-// Initialize initializes the internal word bank by fetching it from the source URL and validating based on some rules.
+// Initialize fetches the word bank from a configured URL, filters the words based on
+// predefined rules (e.g., words longer than 3 characters and composed of letters),
+// and sends the result through the provided channel.
+//
+// Parameters:
+//   - wordBankChannel: A channel to which the validated word bank will be sent.
+//
+// Returns:
+//   - error: An error if the word bank cannot be fetched or processed.
 func Initialize(wordBankChannel chan utils.WordBank) error {
 	wordBankMap := make(utils.WordBank)
 	wordBankURL = config.AppConfig.WordBankURL

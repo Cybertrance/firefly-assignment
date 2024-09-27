@@ -1,3 +1,4 @@
+// Package minheap implements a minimum heap (priority queue) for word frequencies.
 package minheap
 
 import "firefly-assignment/utils"
@@ -7,10 +8,13 @@ import "firefly-assignment/utils"
 
 type MinHeap []utils.WordFreq
 
+// Len returns the length of the heap.
 func (h MinHeap) Len() int { return len(h) }
 
+// Less compares the frequency of two elements, used to order the heap.
 func (h MinHeap) Less(i, j int) bool { return h[i].Frequency < h[j].Frequency }
 
+// Swap swaps two elements in the heap.
 func (h MinHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 
 // Push pushes a new word frequency to the heap

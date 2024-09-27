@@ -1,3 +1,8 @@
+/*
+Package config provides a centralized way to manage application configuration settings.
+It uses Viper to load configuration values from both default settings and a "config.yaml"
+file.
+*/
 package config
 
 import (
@@ -23,7 +28,10 @@ type Config struct {
 
 var AppConfig Config
 
-// LoadConfig loads the configuration from a file or uses default values if the file is missing
+// LoadConfig loads configuration settings for the application.
+// It sets default values for various parameters using Viper and attempts
+// to read from a configuration file named "config.yaml" located in the current directory.
+// If no config file is found, the function proceeds with the default values.
 func LoadConfig() {
 	// Set default values
 	viper.SetDefault("top_results", 10)
